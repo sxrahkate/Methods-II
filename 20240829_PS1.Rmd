@@ -1,0 +1,148 @@
+---
+title: "PS1"
+output:
+  pdf_document: 
+    latex_engine: xelatex
+  html_document:
+    df_print: paged
+date: "2024-08-29"
+---
+
+```{r setup, include=FALSE}
+```
+
+loading packages into R 
+```{r}
+library(tidyverse)
+library(janitor)
+library(swirl)
+
+read.csv("/Users/sarahholland/Desktop/Political Science Data Analysis/Data Sets/kdrama.csv") -> sd
+```
+
+Q1
+```{r}
+dim(sd)
+```
+
+Q2
+```{r}
+names(sd)
+```
+
+Q3
+```{r}
+class(sd$Number.of.Episodes)
+
+mean_episodes <- sd %>%  
+  select(Name, Number.of.Episodes)
+
+mean(mean_episodes$Number.of.Episodes, trim =0, na.rm = TRUE)
+```
+OR
+```{r}
+mean(sd$Number.of.Episodes, trim =0, na.rm = TRUE)
+```
+
+Q4
+```{r}
+show_rating <- sd %>% 
+  select(Name, Rating)
+
+ggplot(show_rating, aes(x= Rating)) +
+  geom_histogram(bins = 10, color = 'black', fill = 'pink') +
+  labs(x= 'Show Rating', y = 'Count of Shows', 
+    title = 'Mean Ratings of KDrama') +
+  theme(plot.title = element_text(hjust=0.5)) +
+  theme(plot.title = element_text(face = "bold")) + 
+  theme_gray()
+```
+OR
+```{r}
+hist(show_rating$Rating) 
+```
+
+Q5
+```{r}
+show_rating_cat <- show_rating %>%
+  mutate(Rating_cat = case_when(Rating >= 9 ~ 'above', TRUE ~ 'below'))
+
+table(show_rating_cat$Rating_cat)
+```
+
+Q6
+```{r}
+sd %>% 
+  rename(year = Year.of.release)
+```
+
+Q7
+```{r}
+yr_released <- sd %>%  
+  select(Name, Year.of.release) %>% 
+  rename(year = Year.of.release)
+
+yr_released_cat <- yr_released %>% 
+  mutate(year_cat = case_when(year >=2020 ~ 'yes', TRUE ~ 'no'))
+
+table(yr_released_cat$year_cat)
+```
+
+Q8
+```{r}
+class(sd$Duration)
+```
+
+Q9
+```{r}
+epi_duration <- sd %>% 
+  select(Duration)
+
+split_duration <- data.frame(do.call("rbind", strsplit(as.character(sd$Duration),
+  c("hr. | min."))))
+
+numeric_data <- split_duration %>% 
+  mutate_if(is.character, as.numeric)
+
+print(numeric_data)
+class(numeric_data$X1)
+```
+```{r}
+only_minutes <- data.frame((X1 = case_when(numeric_data$X1 == 1 ~ 60, numeric_data$X1 == numeric_data$X2 ~ 0,
+    TRUE ~ numeric_data$X2)), (X2 = numeric_data$X2))
+
+colnames(only_minutes)
+
+almost_minutes <- only_minutes %>% 
+  rename(hours = X.X1...case_when.numeric_data.X1....1...60..numeric_data.X1....) %>% 
+  rename(minutes = X.X2...numeric_data.X2.)
+
+duration_minutes <- almost_minutes %>% 
+  mutate(MinDuration = hours + minutes)
+
+duration_minutes
+
+new_data <- data.frame(sd, duration_minutes)
+new_data
+new_data$hours <- NULL
+new_data$minutes <- NULL
+ 
+clean_data <- new_data %>% 
+  mutate(Duration = MinDuration)
+clean_data$MinDuration <- NULL
+
+```
+
+ 
+Q10
+```{r}
+netflix_only <- filter(sd, Original.Network == 'Netflix')
+```
+
+Q11 
+```{r}
+mean(netflix_only$Rating, trim =0, na.rm = TRUE)
+```
+
+
+
